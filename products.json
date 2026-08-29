@@ -16,5 +16,11 @@
     "name": "كيبل ايفون",
     "price": 1000,
     "img": "img/prod_1787994745373.jpg"
+  },
+  {
+    "id": 4,
+    "name": "هب 6 في 1 HDMI 4K 60HZ",
+    "price": 20000,
+    "img": "img/prod_1787994747288.jpg"
   }
 ]
