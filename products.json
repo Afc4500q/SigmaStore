@@ -76,5 +76,11 @@
     "name": "هتفون Aux هوكو",
     "price": 2500,
     "img": "img/prod_1787996155105.jpg"
+  },
+  {
+    "id": 14,
+    "name": "هتفون Aux هوكو DM6",
+    "price": 3000,
+    "img": "img/prod_1787996157185.jpg"
   }
 ]
