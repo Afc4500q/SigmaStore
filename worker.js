@@ -1,21 +1,4 @@
-export default {
-  async fetch(request, env) {
-    const corsHeaders = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type"
-    };
 
-    if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: corsHeaders });
-    }
-
-    if (request.method !== "POST") {
-      return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
-        status: 405,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
 
     try {
       const data = await request.json();
@@ -29,8 +12,7 @@ export default {
         const allowedAdmins = [String(env.CHAT_ID_1), String(env.CHAT_ID_2)].filter(Boolean);
 
         if (!allowedAdmins.includes(chatId)) {
-          return new Response("Unauthorized", { status: 200 });
-        }
+          return new Response("Unauthorized", { status: 200 }
 
         const GITHUB_BASE = `https://api.github.com/repos/${env.GITHUB_REPO}/contents/`;
         const ghHeaders = {
@@ -270,21 +252,4 @@ SIGMA STORE`;
         await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: chatId, text: message })
-        });
-      }
-
-      return new Response(JSON.stringify({ ok: true, message: "تم إرسال الطلب بنجاح" }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-
-    } catch (error) {
-      console.error("Worker Error:", error);
-      return new Response(JSON.stringify({ ok: false, error: error.message || "حدث خطأ في الخادم" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
-  }
-};
+          body: JSON.stringify({ chat_id: 
