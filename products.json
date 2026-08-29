@@ -70,5 +70,11 @@
     "name": "هتفون Aux هوكو",
     "price": 3000,
     "img": "img/prod_1787996152818.jpg"
+  },
+  {
+    "id": 13,
+    "name": "هتفون Aux هوكو",
+    "price": 2500,
+    "img": "img/prod_1787996155105.jpg"
   }
 ]
