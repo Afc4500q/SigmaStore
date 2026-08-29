@@ -103,25 +103,41 @@
       font-weight: 900;
     }
 
-    /* العنوان الترحيبي */
-    .hero {
-      text-align: center;
-      padding: 16px 14px 6px;
+    /* شريط الأقسام (Categories Bar) */
+    .categories-bar {
+      display: flex;
+      gap: 8px;
+      padding: 12px 14px;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none; /* إخفاء شريط التمرير */
+      background: rgba(17, 20, 14, 0.6);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .categories-bar::-webkit-scrollbar {
+      display: none;
     }
 
-    .hero h2 {
-      font-size: 18px;
-      margin-bottom: 4px;
-      color: var(--text-main);
-      word-break: break-word;
-    }
-
-    .hero p {
+    .cat-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
       color: var(--text-dim);
+      padding: 6px 14px;
+      border-radius: 20px;
       font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
     }
 
-    /* الحاوية والشبكة للموبايل */
+    .cat-btn.active, .cat-btn:hover {
+      background: var(--accent);
+      color: #0c0a06;
+      border-color: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    /* الحاوية والشبكة */
     .container {
       width: 100%;
       max-width: 900px;
@@ -173,6 +189,28 @@
       flex-direction: column;
       flex-grow: 1;
       justify-content: space-between;
+    }
+
+    /* الماركة والموديل */
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .brand-tag {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent);
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    .model-tag {
+      color: var(--text-dim);
+      font-size: 11px;
     }
 
     .card-title {
@@ -265,6 +303,7 @@
 
     .item-info { flex: 1; }
     .item-name { font-size: 12px; font-weight: 600; }
+    .item-sub { font-size: 10px; color: var(--text-dim); }
     .item-price { font-size: 11px; color: var(--accent); margin-top: 2px; }
 
     .item-controls {
@@ -348,6 +387,7 @@
 </head>
 <body>
 
+  <!-- الهيدر -->
   <header>
     <div class="brand">
       <div class="brand-logo">S</div>
@@ -359,17 +399,25 @@
     </button>
   </header>
 
-  <div class="hero">
-    <h2>المتجر الإلكتروني لقطع الغيار والصيانة</h2>
-    <p>اختر ما تحتاجه وسيصلك الطلب مباشرة</p>
+  <!-- شريط الأقسام السريع -->
+  <div class="categories-bar" id="categoriesBar">
+    <button class="cat-btn active" onclick="filterCategory('الكل', this)">الكل</button>
+    <button class="cat-btn" onclick="filterCategory('الكيبلات', this)">الكيبلات</button>
+    <button class="cat-btn" onclick="filterCategory('الهتفونات', this)">الهتفونات</button>
+    <button class="cat-btn" onclick="filterCategory('الايربود', this)">الايربود</button>
+    <button class="cat-btn" onclick="filterCategory('سماعات الراس', this)">سماعات الراس</button>
+    <button class="cat-btn" onclick="filterCategory('الشواحن', this)">الشواحن</button>
+    <button class="cat-btn" onclick="filterCategory('الموزعات', this)">الموزعات</button>
   </div>
 
+  <!-- شبكة المنتجات -->
   <div class="container">
     <div class="grid" id="productsGrid">
       <p style="text-align:center; grid-column: 1/-1; color: var(--text-dim);">جاري تحميل المنتجات...</p>
     </div>
   </div>
 
+  <!-- نافذة السلة -->
   <div class="modal" id="cartModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -388,6 +436,7 @@
     </div>
   </div>
 
+  <!-- نافذة التوصيل -->
   <div class="modal" id="checkoutModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -416,6 +465,7 @@
   <script>
     const WORKER_URL = "https://lucky-dream-49fc.afc4500q.workers.dev";
     let products = [];
+    let currentCategory = "الكل";
     let cart = [];
 
     const savedCart = localStorage.getItem("sigma_cart");
@@ -436,20 +486,38 @@
       }
     }
 
+    function filterCategory(cat, btn) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderProducts();
+    }
+
     function renderProducts() {
       const grid = document.getElementById("productsGrid");
-      if (!products || products.length === 0) {
-        grid.innerHTML = '<p style="text-align:center; grid-column:1/-1; color:var(--text-dim);">لا توجد منتجات مسجلة حالياً</p>';
+      
+      const filtered = currentCategory === "الكل" 
+        ? products 
+        : products.filter(p => p.category === currentCategory);
+
+      if (!filtered || filtered.length === 0) {
+        grid.innerHTML = `<p style="text-align:center; grid-column:1/-1; color:var(--text-dim); padding:20px 0;">لا توجد منتجات في قسم (${currentCategory})</p>`;
         return;
       }
 
-      grid.innerHTML = products.map(p => `
+      grid.innerHTML = filtered.map(p => `
         <div class="card">
           <div class="card-img-wrapper">
             <img src="${p.img}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/300x200?text=SIGMA'">
           </div>
           <div class="card-content">
-            <div class="card-title">${p.name}</div>
+            <div>
+              <div class="card-meta">
+                <span class="brand-tag">${p.brand || 'عام'}</span>
+                <span class="model-tag">${p.model || ''}</span>
+              </div>
+              <div class="card-title">${p.name}</div>
+            </div>
             <div class="card-bottom">
               <span class="price">${p.price.toLocaleString()} د.ع</span>
               <button class="add-action-btn" title="إضافة" onclick="addToCart(${p.id})">+</button>
@@ -519,6 +587,7 @@
         <div class="cart-item">
           <div class="item-info">
             <div class="item-name">${item.name}</div>
+            <div class="item-sub">${item.brand || ''} ${item.model || ''}</div>
             <div class="item-price">${(item.price * item.qty).toLocaleString()} د.ع</div>
           </div>
           <div class="item-controls">
@@ -560,7 +629,7 @@
       sendBtn.innerText = "جاري الإرسال...";
 
       const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-      const productsListText = cart.map(item => `- ${item.name} (الكمية: ${item.qty})`).join("\n");
+      const productsListText = cart.map(item => `- ${item.name} [${item.brand || ''} ${item.model || ''}] (الكمية: ${item.qty})`).join("\n");
       const orderNumber = Math.floor(1000 + Math.random() * 9000);
       const currentDate = new Date().toLocaleString("ar-IQ", { timeZone: "Asia/Baghdad" });
 
