@@ -6,24 +6,36 @@
   <title>SIGMA STORE</title>
   <style>
     :root {
-      --bg-main: #0c0a06;
-      --bg-surface: #17140e;
-      --bg-card: #1c1710;
-      --accent: #f59e0b;
-      --accent-hover: #d97706;
-      --accent-glow: rgba(245, 158, 11, 0.25);
-      --text-main: #fbfbfb;
-      --text-dim: #a8a29e;
-      --border-color: rgba(245, 158, 11, 0.18);
-      --card-radius: 12px;
-      --danger: #ef4444;
+      --bg-main: #0b0f19;
+      --bg-surface: #111827;
+      --bg-card: #1e293b;
+      --bg-img: #0f172a;
+      
+      --accent: #38bdf8;
+      --accent-gradient: linear-gradient(135deg, #38bdf8, #2563eb);
+      --accent-glow: rgba(56, 189, 248, 0.2);
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --badge-brand-bg: rgba(56, 189, 248, 0.12);
+      --badge-brand-text: #38bdf8;
+      --badge-model-bg: rgba(148, 163, 184, 0.1);
+      --badge-model-text: #cbd5e1;
+      
+      --price-color: #38bdf8;
+      --border-color: rgba(255, 255, 255, 0.07);
+      --border-focus: rgba(56, 189, 248, 0.4);
+      --card-radius: 16px;
+      --danger: #f43f5e;
     }
 
     *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     html, body {
@@ -33,17 +45,19 @@
       background-color: var(--bg-main);
       color: var(--text-main);
       min-height: 100vh;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    /* شريط الرأس */
+    /* الهيدر */
     header {
       width: 100%;
-      padding: 12px 14px;
+      padding: 12px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(23, 20, 14, 0.95);
-      backdrop-filter: blur(10px);
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border-color);
       position: sticky;
       top: 0;
@@ -53,49 +67,55 @@
     .brand {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .brand-logo {
-      width: 34px;
-      height: 34px;
-      background: linear-gradient(135deg, var(--accent), #b45309);
-      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      background: var(--accent-gradient);
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 900;
-      color: #0c0a06;
-      font-size: 18px;
+      color: #0b0f19;
+      font-size: 19px;
+      box-shadow: 0 4px 12px var(--accent-glow);
     }
 
     .brand-title {
       font-size: 16px;
       font-weight: 800;
-      color: var(--accent);
+      color: #fff;
       letter-spacing: 0.5px;
     }
 
     .cart-btn {
-      background: var(--bg-surface);
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-weight: bold;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 7px 14px;
+      border-radius: 10px;
+      font-weight: 700;
       font-size: 13px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .cart-btn:active {
+      transform: scale(0.96);
     }
 
     .cart-badge {
-      background: var(--accent);
-      color: #0c0a06;
+      background: var(--accent-gradient);
+      color: #0b0f19;
       border-radius: 50%;
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -103,62 +123,61 @@
       font-weight: 900;
     }
 
-    /* شريط الأقسام (Categories Bar) */
+    /* شريط الأقسام */
     .categories-bar {
       display: flex;
       gap: 8px;
-      padding: 12px 14px;
+      padding: 12px 16px;
       overflow-x: auto;
       white-space: nowrap;
-      scrollbar-width: none; /* إخفاء شريط التمرير */
-      background: rgba(17, 20, 14, 0.6);
+      scrollbar-width: none;
+      background: var(--bg-surface);
       border-bottom: 1px solid var(--border-color);
     }
-    .categories-bar::-webkit-scrollbar {
-      display: none;
-    }
+    .categories-bar::-webkit-scrollbar { display: none; }
 
     .cat-btn {
-      background: var(--bg-surface);
+      background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--border-color);
-      color: var(--text-dim);
-      padding: 6px 14px;
-      border-radius: 20px;
+      color: var(--text-muted);
+      padding: 7px 16px;
+      border-radius: 24px;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
     }
 
-    .cat-btn.active, .cat-btn:hover {
-      background: var(--accent);
-      color: #0c0a06;
-      border-color: var(--accent);
-      box-shadow: 0 0 10px var(--accent-glow);
+    .cat-btn.active {
+      background: #fff;
+      color: #0b0f19;
+      border-color: #fff;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(255, 255, 255, 0.15);
     }
 
-    /* الحاوية والشبكة */
+    /* شبكة المنتجات */
     .container {
       width: 100%;
       max-width: 900px;
       margin: 0 auto;
-      padding: 12px;
+      padding: 14px;
     }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      gap: 12px;
     }
 
     @media (min-width: 640px) {
       .grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 16px;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 18px;
       }
     }
 
-    /* بطاقة المنتج */
+    /* بطاقة المنتج الفاخرة */
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
@@ -166,58 +185,75 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      transition: border-color 0.2s ease;
     }
 
+    /* إطار الصورة: تظهر كاملة ونقية مع هوامش مريحة */
     .card-img-wrapper {
       width: 100%;
-      height: 130px;
-      background: #120e08;
+      height: 160px;
+      background: var(--bg-img);
+      padding: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
     }
 
     .card-img-wrapper img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
     }
 
     .card-content {
-      padding: 10px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
       flex-grow: 1;
       justify-content: space-between;
+      gap: 10px;
     }
 
-    /* الماركة والموديل */
-    .card-meta {
+    /* تمييز الماركة والموديل بوضوح تام للزبون */
+    .card-meta-box {
       display: flex;
-      align-items: center;
+      flex-wrap: wrap;
       gap: 6px;
-      margin-bottom: 4px;
+      align-items: center;
     }
 
-    .brand-tag {
-      background: rgba(245, 158, 11, 0.15);
-      color: var(--accent);
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 700;
-    }
-
-    .model-tag {
-      color: var(--text-dim);
+    .meta-tag {
       font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      line-height: 1.2;
+    }
+
+    .meta-brand {
+      background: var(--badge-brand-bg);
+      color: var(--badge-brand-text);
+      font-weight: 700;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .meta-model {
+      background: var(--badge-model-bg);
+      color: var(--badge-model-text);
+      font-weight: 500;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .card-title {
       font-size: 13px;
       font-weight: 600;
-      margin-bottom: 6px;
-      line-height: 1.3;
+      color: #fff;
+      line-height: 1.4;
       word-break: break-word;
     }
 
@@ -225,169 +261,190 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
       margin-top: auto;
-      padding-top: 6px;
-      border-top: 1px solid rgba(255,255,255,0.05);
     }
 
-    .price {
-      color: var(--accent);
-      font-weight: 700;
-      font-size: 12px;
+    .price-wrapper {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .price-val {
+      color: var(--price-color);
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.3px;
     }
 
     .add-action-btn {
-      width: 28px;
-      height: 28px;
-      background: rgba(245, 158, 11, 0.15);
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      border-radius: 6px;
+      width: 32px;
+      height: 32px;
+      background: var(--accent-gradient);
+      border: none;
+      color: #0b0f19;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
+      box-shadow: 0 2px 8px var(--accent-glow);
+      transition: transform 0.15s ease;
     }
 
-    /* النوافذ المنبثقة */
+    .add-action-btn:active {
+      transform: scale(0.9);
+    }
+
+    /* النوافذ المنبثقة (Modals) */
     .modal {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(4px);
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       z-index: 100;
       justify-content: center;
       align-items: center;
-      padding: 12px;
+      padding: 14px;
     }
 
     .modal-content {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
-      border-radius: 14px;
+      border-radius: 18px;
       width: 100%;
-      max-width: 400px;
+      max-width: 420px;
       max-height: 85vh;
       overflow-y: auto;
-      padding: 16px;
+      padding: 18px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
     }
 
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       border-bottom: 1px solid var(--border-color);
-      padding-bottom: 8px;
+      padding-bottom: 10px;
     }
 
     .close-btn {
       background: none;
       border: none;
-      color: var(--text-dim);
+      color: var(--text-muted);
       font-size: 20px;
       cursor: pointer;
+      padding: 4px;
     }
 
     .cart-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px dashed rgba(255,255,255,0.1);
-      gap: 6px;
+      padding: 12px 0;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+      gap: 8px;
     }
 
     .item-info { flex: 1; }
-    .item-name { font-size: 12px; font-weight: 600; }
-    .item-sub { font-size: 10px; color: var(--text-dim); }
-    .item-price { font-size: 11px; color: var(--accent); margin-top: 2px; }
+    .item-name { font-size: 13px; font-weight: 600; color: #fff; }
+    .item-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .item-price { font-size: 12px; color: var(--accent); margin-top: 3px; font-weight: 700; }
 
     .item-controls {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
     }
 
     .qty-btn {
-      width: 24px;
-      height: 24px;
-      background: #262117;
+      width: 28px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--border-color);
       color: #fff;
-      border-radius: 4px;
+      border-radius: 6px;
       cursor: pointer;
+      font-weight: bold;
     }
 
-    .qty-display { font-size: 12px; font-weight: bold; min-width: 16px; text-align: center; }
-    .del-item-btn { background: none; border: none; color: var(--danger); font-size: 15px; cursor: pointer; }
+    .qty-display { font-size: 13px; font-weight: bold; min-width: 18px; text-align: center; }
+    .del-item-btn { background: none; border: none; color: var(--danger); font-size: 16px; cursor: pointer; padding: 4px; }
 
     .cart-summary {
       display: flex;
       justify-content: space-between;
-      font-size: 14px;
-      font-weight: bold;
-      color: var(--accent);
-      margin: 12px 0;
-      padding-top: 8px;
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      margin: 16px 0 12px;
+      padding-top: 12px;
       border-top: 1px solid var(--border-color);
     }
 
     .btn-main {
       width: 100%;
-      background: var(--accent);
-      color: #0c0a06;
+      background: var(--accent-gradient);
+      color: #0b0f19;
       border: none;
-      padding: 11px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: bold;
+      padding: 13px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 800;
       cursor: pointer;
+      box-shadow: 0 4px 14px var(--accent-glow);
     }
 
     .btn-clear {
       background: transparent;
       border: 1px solid var(--border-color);
       color: var(--text-dim);
-      padding: 7px;
-      border-radius: 6px;
-      font-size: 11px;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 12px;
       cursor: pointer;
       width: 100%;
-      margin-top: 6px;
+      margin-top: 8px;
     }
 
     .delivery-notice {
-      background: rgba(245, 158, 11, 0.1);
-      border: 1px dashed var(--accent);
-      color: var(--accent);
-      padding: 8px;
-      border-radius: 6px;
-      font-size: 11px;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px dashed rgba(56, 189, 248, 0.3);
+      color: #e0f2fe;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 12px;
       text-align: center;
-      margin-bottom: 12px;
-      line-height: 1.4;
+      margin-bottom: 14px;
+      line-height: 1.5;
     }
 
-    .form-group { margin-bottom: 10px; }
-    .form-group label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
     .form-group input {
       width: 100%;
-      padding: 9px;
+      padding: 10px 12px;
       background: var(--bg-main);
       border: 1px solid var(--border-color);
-      border-radius: 6px;
+      border-radius: 8px;
       color: #fff;
       font-size: 13px;
+      outline: none;
+    }
+    .form-group input:focus {
+      border-color: var(--accent);
     }
   </style>
 </head>
 <body>
 
-  <!-- الهيدر -->
+  <!-- شريط الرأس -->
   <header>
     <div class="brand">
       <div class="brand-logo">S</div>
@@ -399,7 +456,7 @@
     </button>
   </header>
 
-  <!-- شريط الأقسام السريع -->
+  <!-- شريط الأقسام -->
   <div class="categories-bar" id="categoriesBar">
     <button class="cat-btn active" onclick="filterCategory('الكل', this)">الكل</button>
     <button class="cat-btn" onclick="filterCategory('الكيبلات', this)">الكيبلات</button>
@@ -410,10 +467,10 @@
     <button class="cat-btn" onclick="filterCategory('الموزعات', this)">الموزعات</button>
   </div>
 
-  <!-- شبكة المنتجات -->
+  <!-- عرض المنتجات -->
   <div class="container">
     <div class="grid" id="productsGrid">
-      <p style="text-align:center; grid-column: 1/-1; color: var(--text-dim);">جاري تحميل المنتجات...</p>
+      <p style="text-align:center; grid-column: 1/-1; color: var(--text-dim); padding: 30px 0;">جاري تحميل المنتجات...</p>
     </div>
   </div>
 
@@ -421,17 +478,17 @@
   <div class="modal" id="cartModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>سلة المشتريات</h3>
+        <h3 style="font-size: 16px;">سلة المشتريات</h3>
         <button class="close-btn" onclick="closeCartModal()">✕</button>
       </div>
       <div id="cartItemsContainer"></div>
       <div id="cartFooterSection" style="display: none;">
         <div class="cart-summary">
-          <span>المجموع:</span>
-          <span id="cartTotalPrice">0 د.ع</span>
+          <span>المجموع الإجمالي:</span>
+          <span id="cartTotalPrice" style="color: var(--accent);">0 د.ع</span>
         </div>
-        <button class="btn-main" onclick="openCheckoutModal()">متابعة الشراء 💳</button>
-        <button class="btn-clear" onclick="clearFullCart()">إفراغ السلة</button>
+        <button class="btn-main" onclick="openCheckoutModal()">متابعة إتمام الطلب 💳</button>
+        <button class="btn-clear" onclick="clearFullCart()">إفراغ السلة كلياً</button>
       </div>
     </div>
   </div>
@@ -440,11 +497,11 @@
   <div class="modal" id="checkoutModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>بيانات التوصيل</h3>
+        <h3 style="font-size: 16px;">بيانات التوصيل</h3>
         <button class="close-btn" onclick="closeCheckoutModal()">✕</button>
       </div>
       <div class="delivery-notice">
-        📍 <strong>ملاحظة:</strong> التوصيل داخل مدينة الناصرية وناحية سيديناوية فقط.
+        📍 <strong>تنبيه التوصيل:</strong> التوصيل داخل مدينة الناصرية وناحية سيديناوية فقط.
       </div>
       <form id="orderForm">
         <div class="form-group">
@@ -455,7 +512,7 @@
           <label>العنوان بالتفصيل *</label>
           <input type="text" id="custAddress" required placeholder="المنطقة - الشارع - أقرب نقطة دالة">
         </div>
-        <button type="submit" class="btn-main" id="confirmOrderBtn" style="margin-top: 6px;">
+        <button type="submit" class="btn-main" id="confirmOrderBtn" style="margin-top: 8px;">
           تأكيد وإرسال الطلب
         </button>
       </form>
@@ -482,7 +539,7 @@
         updateCartBadge();
       } catch (err) {
         document.getElementById("productsGrid").innerHTML = 
-          '<p style="text-align:center; grid-column:1/-1; color:var(--text-dim);">لا توجد منتجات مسجلة حالياً</p>';
+          '<p style="text-align:center; grid-column:1/-1; color:var(--text-dim); padding:30px 0;">لا توجد منتجات مسجلة حالياً</p>';
       }
     }
 
@@ -501,30 +558,37 @@
         : products.filter(p => p.category === currentCategory);
 
       if (!filtered || filtered.length === 0) {
-        grid.innerHTML = `<p style="text-align:center; grid-column:1/-1; color:var(--text-dim); padding:20px 0;">لا توجد منتجات في قسم (${currentCategory})</p>`;
+        grid.innerHTML = `<p style="text-align:center; grid-column:1/-1; color:var(--text-dim); padding:30px 0;">لا توجد منتجات في قسم (${currentCategory})</p>`;
         return;
       }
 
-      grid.innerHTML = filtered.map(p => `
-        <div class="card">
-          <div class="card-img-wrapper">
-            <img src="${p.img}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/300x200?text=SIGMA'">
-          </div>
-          <div class="card-content">
-            <div>
-              <div class="card-meta">
-                <span class="brand-tag">${p.brand || 'عام'}</span>
-                <span class="model-tag">${p.model || ''}</span>
+      grid.innerHTML = filtered.map(p => {
+        const brandDisplay = (p.brand && p.brand !== "-") ? `<span class="meta-tag meta-brand">الماركة: ${p.brand}</span>` : '';
+        const modelDisplay = (p.model && p.model !== "-") ? `<span class="meta-tag meta-model">الموديل: ${p.model}</span>` : '';
+
+        return `
+          <div class="card">
+            <div class="card-img-wrapper">
+              <img src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x200?text=SIGMA'">
+            </div>
+            <div class="card-content">
+              <div>
+                <div class="card-meta-box">
+                  ${brandDisplay}
+                  ${modelDisplay}
+                </div>
+                <div class="card-title">${p.name}</div>
               </div>
-              <div class="card-title">${p.name}</div>
-            </div>
-            <div class="card-bottom">
-              <span class="price">${p.price.toLocaleString()} د.ع</span>
-              <button class="add-action-btn" title="إضافة" onclick="addToCart(${p.id})">+</button>
+              <div class="card-bottom">
+                <div class="price-wrapper">
+                  <span class="price-val">${p.price.toLocaleString()} د.ع</span>
+                </div>
+                <button class="add-action-btn" title="إضافة للسلة" onclick="addToCart(${p.id})">+</button>
+              </div>
             </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function addToCart(productId) {
@@ -578,7 +642,7 @@
       const footer = document.getElementById("cartFooterSection");
 
       if (cart.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:var(--text-dim); padding:16px 0;">السلة فارغة حالياً</p>';
+        container.innerHTML = '<p style="text-align:center; color:var(--text-dim); padding:20px 0;">السلة فارغة حالياً</p>';
         footer.style.display = "none";
         return;
       }
