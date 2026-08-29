@@ -21,7 +21,7 @@ export default {
       const data = await request.json();
 
       // ====================================================
-      // 1. معالجة رسائل، أوامر، ضغطات الأزرار، وصور Telegram
+      // 1. معالجة رسائل وأوامر وأزرار Telegram
       // ====================================================
       if (data.message || data.callback_query) {
         const isCallback = Boolean(data.callback_query);
@@ -41,16 +41,14 @@ export default {
           "Accept": "application/vnd.github.v3+json"
         };
 
-        // لوحة المفاتيح الرئيسية الثابتة
         const mainKeyboard = {
           keyboard: [
             [{ text: "📦 عرض المنتجات" }, { text: "➕ إضافة منتج" }],
-            [{ text: "❓ تعليمات الاستخدام" }]
+            [{ text: "✏️ طريقة التعديل" }, { text: "❓ تعليمات الاستخدام" }]
           ],
           resize_keyboard: true
         };
 
-        // دالة إرسال رسالة نصية عادية مع الكيبورد الرئيسي
         const sendReply = async (replyText, customKeyboard = mainKeyboard) => {
           await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
             method: "POST",
@@ -63,18 +61,17 @@ export default {
           });
         };
 
-        // دالة إرسال منتج مع أزرار التحكم تحته
         const sendProductWithButtons = async (p) => {
           const inlineKeyboard = {
             inline_keyboard: [
               [
-                { text: "✏️ تعديل السعر", callback_data: `edit_${p.id}` },
+                { text: "✏️ تعديل كامل البيانات", callback_data: `edit_${p.id}` },
                 { text: "🗑️ حذف المنتج", callback_data: `del_${p.id}` }
               ]
             ]
           };
 
-          const pText = `🏷️ الاسم: ${p.name}\n💰 السعر: ${p.price.toLocaleString()} د.ع\n🆔 المعرف: ${p.id}`;
+          const pText = `🏷️ الاسم: ${p.name}\n📁 القسم: ${p.category || 'عام'}\n🏢 الماركة: ${p.brand || '-'}\n📱 الموديل: ${p.model || '-'}\n💰 السعر: ${p.price.toLocaleString()} د.ع\n🆔 المعرف: ${p.id}`;
           await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -116,9 +113,7 @@ export default {
           if (!res.ok) throw new Error("فشل حفظ التعديلات في GitHub");
         };
 
-        // ==========================================
-        // تفاعل الضغط على الأزرار الداخلية (Inline Buttons)
-        // ==========================================
+        // تفاعل الأزرار الداخلية
         if (isCallback) {
           if (callbackData.startsWith("del_")) {
             const targetId = parseInt(callbackData.replace("del_", ""), 10);
@@ -141,37 +136,62 @@ export default {
 
           if (callbackData.startsWith("edit_")) {
             const targetId = parseInt(callbackData.replace("edit_", ""), 10);
-            await answerCallback(data.callback_query.id, "أرسل السعر الجديد");
-            await sendReply(`✏️ لتعديل سعر هذا المنتج، أرسل رسالة نصية كالتالي:\n/edit ${targetId} | السعر_الجديد\n\nمثال:\n/edit ${targetId} | 35000`);
+            await answerCallback(data.callback_query.id, "انسخ صيغة التعديل");
+            
+            const { products } = await getProductsFromGithub();
+            const currentItem = products.find(p => p.id === targetId);
+
+            if (currentItem) {
+              const template = `/edit ${targetId} | ${currentItem.category || ''} | ${currentItem.brand || ''} | ${currentItem.model || ''} | ${currentItem.name || ''} | ${currentItem.price}`;
+              await sendReply(`✏️ لتعديل بيانات المنتج (#${targetId})، انسخ النص التالي وعدّل ما تريده:\n\n\`${template}\``);
+            }
           }
 
           return new Response("OK", { status: 200 });
         }
 
-        // ==========================================
-        // استجابة الأزرار الرئيسية والنصوص
-        // ==========================================
+        // الأوامر والقوائم
         if (text === "/start" || text === "❓ تعليمات الاستخدام") {
           const welcomeMsg = 
 `👋 مرحباً بك في لوحة تحكم SIGMA STORE
 
-استخدم الأزرار بالأسفل لإدارة المتجر:
-📦 عرض المنتجات: لمشاهدة جميع المنتجات مع أزرار الحذف والتعديل المباشرة.
-➕ إضافة منتج: لمعرفة كيفية رفع منتج جديد بصورته.`;
+الأقسام المتاحة:
+(الكيبلات ، الهتفونات ، الايربود ، سماعات الراس ، الشواحن ، الموزعات)
+
+📸 لإضافة منتج:
+أرسل الصورة واكتب في الوصف:
+القسم | الماركة | الموديل | اسم المنتج | السعر
+
+✏️ لتعديل منتج:
+اضغط على "عرض المنتجات" ثم اضغط "تعديل كامل البيانات" تحت أي منتج.`;
           await sendReply(welcomeMsg);
+          return new Response("OK", { status: 200 });
+        }
+
+        if (text === "✏️ طريقة التعديل") {
+          const editGuide = 
+`✏️ صيغة تعديل البيانات:
+
+/edit رقم_المنتج | القسم | الماركة | الموديل | الاسم | السعر
+
+💡 يمكنك ترك الحقل الذي لا تريد تغييره فارغاً.
+
+مثال لتعديل السعر والاسم فقط للمنتج رقم 1:
+/edit 1 | | | | شاشة ايفون 11 برو ماكس | 40000`;
+          await sendReply(editGuide);
           return new Response("OK", { status: 200 });
         }
 
         if (text === "➕ إضافة منتج") {
           const addInfo = 
-`📸 لإضافة منتج جديد مع صورته:
+`📸 صيغة إضافة منتج جديد:
 
-1️⃣ اختر الصورة من معرض هاتفك وأرسلها إلى المحادثة.
-2️⃣ اكتب في خانة الوصف (Caption) المرفقة بالصورة:
-اسم المنتج | السعر
+1️⃣ اختر الصورة من الاستوديو.
+2️⃣ اكتب في وصف الصورة (Caption):
+القسم | الماركة | الموديل | اسم المنتج | السعر
 
-مثال للوصف:
-شاشة ايفون 11 اصلية | 35000`;
+مثال:
+الشواحن | Samsung | 45W | شاحن سامسونج أصلي | 25000`;
           await sendReply(addInfo);
           return new Response("OK", { status: 200 });
         }
@@ -182,7 +202,7 @@ export default {
             if (products.length === 0) {
               await sendReply("📦 لا توجد منتجات مسجلة في المتجر حالياً.");
             } else {
-              await sendReply(`📋 جاري عرض قائمة المنتجات (${products.length} منتج):`);
+              await sendReply(`📋 قائمة المنتجات (${products.length} منتج):`);
               for (const p of products) {
                 await sendProductWithButtons(p);
               }
@@ -193,17 +213,17 @@ export default {
           return new Response("OK", { status: 200 });
         }
 
-        // استقبال صورة جديدة مع الوصف (اسم المنتج | السعر)
+        // إضافة منتج جديد
         if (data.message.photo && data.message.photo.length > 0 && text) {
           const cleanText = text.replace("/add", "").trim();
           const parts = cleanText.split("|").map(s => s.trim());
 
-          if (parts.length < 2) {
-            await sendReply("⚠️ يرجى كتابة اسم المنتج والسعر مفصولين بفاصل | في وصف الصورة.\nمثال: شاشة ايفون 11 | 35000");
+          if (parts.length < 5) {
+            await sendReply("⚠️ يرجى كتابة البيانات كاملة كالتالي:\nالقسم | الماركة | الموديل | اسم المنتج | السعر");
             return new Response("OK", { status: 200 });
           }
 
-          const [name, priceStr] = parts;
+          const [category, brand, model, name, priceStr] = parts;
           const price = parseInt(priceStr.replace(/[^0-9]/g, ""), 10);
           let imgPath = "img/placeholder.jpg";
 
@@ -244,7 +264,7 @@ export default {
 
             const { sha, products } = await getProductsFromGithub();
             const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
-            const newProd = { id: newId, name, price, img: imgPath };
+            const newProd = { id: newId, category, brand, model, name, price, img: imgPath };
             products.push(newProd);
 
             await saveProductsToGithub(products, sha, `Add product: ${name}`);
@@ -257,27 +277,38 @@ export default {
           return new Response("OK", { status: 200 });
         }
 
-        // تعديل السعر
+        // معالجة التعديل الشامل
         if (text.startsWith("/edit")) {
           const raw = text.replace("/edit", "").trim();
           const parts = raw.split("|").map(s => s.trim());
           const targetId = parseInt(parts[0], 10);
-          const newPrice = parts[1] ? parseInt(parts[1].replace(/[^0-9]/g, ""), 10) : NaN;
 
-          if (isNaN(targetId) || isNaN(newPrice)) {
-            await sendReply("⚠️ الصيغة: /edit رقم_المنتج | السعر_الجديد");
+          if (isNaN(targetId)) {
+            await sendReply("⚠️ يرجى تحديد رقم المنتج بشكل صحيح.\nمثال:\n/edit 1 | القسم | الماركة | الموديل | الاسم | السعر");
             return new Response("OK", { status: 200 });
           }
 
           try {
             const { sha, products } = await getProductsFromGithub();
             const item = products.find(p => p.id === targetId);
+
             if (!item) {
               await sendReply(`⚠️ لم يتم العثور على منتج برقم ${targetId}`);
             } else {
-              item.price = newPrice;
-              await saveProductsToGithub(products, sha, `Update price for ID: ${targetId}`);
-              await sendReply(`✏️ تم تحديث سعر (${item.name}) إلى ${newPrice.toLocaleString()} د.ع بنجاح.`);
+              // إذا كتب المستخدم قيمة يتم تحديثها، وإذا تركها فارغة تبقى القيمة القديمة
+              if (parts[1] && parts[1] !== "-") item.category = parts[1];
+              if (parts[2] && parts[2] !== "-") item.brand = parts[2];
+              if (parts[3] && parts[3] !== "-") item.model = parts[3];
+              if (parts[4] && parts[4] !== "-") item.name = parts[4];
+              
+              if (parts[5]) {
+                const parsedPrice = parseInt(parts[5].replace(/[^0-9]/g, ""), 10);
+                if (!isNaN(parsedPrice)) item.price = parsedPrice;
+              }
+
+              await saveProductsToGithub(products, sha, `Full update product ID: ${targetId}`);
+              await sendReply(`✅ تم تحديث بيانات المنتج بنجاح!`);
+              await sendProductWithButtons(item);
             }
           } catch (err) {
             await sendReply("❌ فشل التعديل: " + err.message);
@@ -289,7 +320,7 @@ export default {
       }
 
       // ====================================================
-      // 2. استقبال طلبات الشراء القادمة من المتجر
+      // 2. استقبال طلبات الشراء
       // ====================================================
       const phone = String(data.phone || "").trim();
       const address = String(data.address || "").trim();
