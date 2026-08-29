@@ -268,3 +268,5 @@ SIGMA STORE`;
 
     }
 };
+
+// Sigma Store Worker
