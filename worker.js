@@ -20,29 +20,25 @@ export default {
     try {
       const data = await request.json();
 
-      // ==========================================
-      // أولاً: معالجة رسائل وأوامر البوت من Telegram
-      // ==========================================
-      if (data.message && data.message.text) {
+      // ====================================================
+      // 1. معالجة رسائل وأوامر وصور البوت من Telegram
+      // ====================================================
+      if (data.message) {
         const chatId = String(data.message.chat.id);
-        const text = data.message.text.trim();
+        const text = (data.message.text || data.message.caption || "").trim();
         const allowedAdmins = [String(env.CHAT_ID_1), String(env.CHAT_ID_2)].filter(Boolean);
 
-        // التحقق من أن المرسل أدمن مصرح له
         if (!allowedAdmins.includes(chatId)) {
           return new Response("Unauthorized", { status: 200 });
         }
 
-        // مسار ملف المنتجات في GitHub
-        const FILE_PATH = "products.json";
-        const GITHUB_API = `https://api.github.com/repos/${env.GITHUB_REPO}/contents/${FILE_PATH}`;
+        const GITHUB_BASE = `https://api.github.com/repos/${env.GITHUB_REPO}/contents/`;
         const ghHeaders = {
           "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
           "User-Agent": "SigmaStore-Worker",
           "Accept": "application/vnd.github.v3+json"
         };
 
-        // دالة مساعدة لإرسال رد في تيليجرام
         const sendReply = async (replyText) => {
           await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
             method: "POST",
@@ -51,57 +47,50 @@ export default {
           });
         };
 
-        // دالة جلب المنتجات الحالية من GitHub
         const getProductsFromGithub = async () => {
-          const res = await fetch(GITHUB_API, { headers: ghHeaders });
+          const res = await fetch(GITHUB_BASE + "products.json", { headers: ghHeaders });
           if (!res.ok) throw new Error("تعذر قراءة ملف products.json من GitHub");
           const fileData = await res.json();
           const content = decodeURIComponent(escape(atob(fileData.content.replace(/\s/g, ''))));
           return { sha: fileData.sha, products: JSON.parse(content || "[]") };
         };
 
-        // دالة حفظ المنتجات في GitHub
         const saveProductsToGithub = async (newProducts, sha, commitMsg) => {
           const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(newProducts, null, 2))));
-          const res = await fetch(GITHUB_API, {
+          const res = await fetch(GITHUB_BASE + "products.json", {
             method: "PUT",
             headers: ghHeaders,
-            body: JSON.stringify({
-              message: commitMsg,
-              content: updatedContent,
-              sha: sha
-            })
+            body: JSON.stringify({ message: commitMsg, content: updatedContent, sha: sha })
           });
           if (!res.ok) throw new Error("فشل حفظ التعديلات في GitHub");
         };
 
-        // أمر المساعدة /start
+        // مساعدة
         if (text === "/start" || text === "/help") {
           const helpMsg = 
 `🛠 لوحة تحكم منتجات SIGMA STORE:
 
-1️⃣ إضافة منتج جديد:
-/add الاسم | السعر | مسار الصورة
+📸 1️⃣ لإضافة منتج بصورة من جهازك:
+أرسل الصورة من الهاتف واكتب في خانة الوصف (Caption):
+/add اسم المنتج | السعر
 مثال:
-/add شاشة ايفون 12 | 45000 | img/screen12.jpg
+/add كفر حماية ايفون | 12000
 
-2️⃣ حذف منتج:
+🗑️ 2️⃣ لحذف منتج:
 /delete معرف_المنتج
-مثال:
-/delete 2
+مثال: /delete 2
 
-3️⃣ تعديل السعر:
+✏️ 3️⃣ لتعديل سعر:
 /edit معرف_المنتج | السعر_الجديد
-مثال:
-/edit 1 | 30000
+مثال: /edit 1 | 30000
 
-4️⃣ عرض قائمة المنتجات:
+📦 4️⃣ لعرض المنتجات:
 /list`;
           await sendReply(helpMsg);
           return new Response("OK", { status: 200 });
         }
 
-        // أمر عرض المنتجات /list
+        // عرض القائمة
         if (text === "/list") {
           try {
             const { products } = await getProductsFromGithub();
@@ -120,40 +109,77 @@ export default {
           return new Response("OK", { status: 200 });
         }
 
-        // أمر الإضافة /add
+        // إضافة منتج (مع صورة مرفقة من الجهاز)
         if (text.startsWith("/add")) {
           const raw = text.replace("/add", "").trim();
           const parts = raw.split("|").map(s => s.trim());
-          if (parts.length < 3) {
-            await sendReply("⚠️ صيغة غير صحيحة.\nالصيغة: /add الاسم | السعر | مسار الصورة");
+
+          if (parts.length < 2) {
+            await sendReply("⚠️ الصيغة غير صحيحة.\nاكتب في وصف الصورة:\n/add اسم المنتج | السعر");
             return new Response("OK", { status: 200 });
           }
 
-          const [name, priceStr, img] = parts;
+          const [name, priceStr] = parts;
           const price = parseInt(priceStr.replace(/[^0-9]/g, ""), 10);
+          let imgPath = parts[2] || "img/placeholder.jpg";
+
+          // إذا كانت الرسالة تحتوي على صورة مرفوعة
+          if (data.message.photo && data.message.photo.length > 0) {
+            await sendReply("⏳ جاري رفع الصورة إلى GitHub وحفظ المنتج...");
+            try {
+              const bestPhoto = data.message.photo[data.message.photo.length - 1];
+              const fileRes = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/getFile?file_id=${bestPhoto.file_id}`);
+              const fileData = await fileRes.json();
+              
+              if (fileData.ok) {
+                const filePath = fileData.result.file_path;
+                const fileDownloadUrl = `https://api.telegram.org/file/bot${env.BOT_TOKEN}/${filePath}`;
+                const imgBlob = await fetch(fileDownloadUrl);
+                const arrayBuffer = await imgBlob.arrayBuffer();
+                
+                // تحويل الصورة إلى Base64
+                let binary = '';
+                const bytes = new Uint8Array(arrayBuffer);
+                for (let i = 0; i < bytes.byteLength; i++) {
+                  binary += String.fromCharCode(bytes[i]);
+                }
+                const base64Image = btoa(binary);
+
+                const fileName = `prod_${Date.now()}.jpg`;
+                const ghImgRes = await fetch(GITHUB_BASE + `img/${fileName}`, {
+                  method: "PUT",
+                  headers: ghHeaders,
+                  body: JSON.stringify({
+                    message: `Upload image: ${fileName}`,
+                    content: base64Image
+                  })
+                });
+
+                if (ghImgRes.ok) {
+                  imgPath = `img/${fileName}`;
+                }
+              }
+            } catch (imgErr) {
+              console.error("Image upload failed:", imgErr);
+            }
+          }
 
           try {
             const { sha, products } = await getProductsFromGithub();
             const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
-            const newProduct = { id: newId, name, price, img };
-            products.push(newProduct);
+            products.push({ id: newId, name, price, img: imgPath });
 
             await saveProductsToGithub(products, sha, `Add product: ${name}`);
-            await sendReply(`✅ تم إضافة المنتج بنجاح!\n🆔 المعرف: ${newId}\n🏷️ الاسم: ${name}\n💰 السعر: ${price.toLocaleString()} د.ع`);
+            await sendReply(`✅ تم حفظ المنتج ورفع الصورة بنجاح!\n🆔 المعرف: ${newId}\n🏷️ الاسم: ${name}\n💰 السعر: ${price.toLocaleString()} د.ع\n🖼️ مسار الصورة: ${imgPath}`);
           } catch (err) {
             await sendReply("❌ فشلت الإضافة: " + err.message);
           }
           return new Response("OK", { status: 200 });
         }
 
-        // أمر الحذف /delete
+        // حذف منتج
         if (text.startsWith("/delete")) {
           const targetId = parseInt(text.replace("/delete", "").trim(), 10);
-          if (isNaN(targetId)) {
-            await sendReply("⚠️ يرجى كتابة رقم المنتج، مثال: /delete 2");
-            return new Response("OK", { status: 200 });
-          }
-
           try {
             const { sha, products } = await getProductsFromGithub();
             const index = products.findIndex(p => p.id === targetId);
@@ -171,17 +197,12 @@ export default {
           return new Response("OK", { status: 200 });
         }
 
-        // أمر تعديل السعر /edit
+        // تعديل سعر
         if (text.startsWith("/edit")) {
           const raw = text.replace("/edit", "").trim();
           const parts = raw.split("|").map(s => s.trim());
           const targetId = parseInt(parts[0], 10);
           const newPrice = parts[1] ? parseInt(parts[1].replace(/[^0-9]/g, ""), 10) : NaN;
-
-          if (isNaN(targetId) || isNaN(newPrice)) {
-            await sendReply("⚠️ صيغة غير صحيحة.\nالصيغة: /edit رقم_المنتج | السعر_الجديد\nمثال: /edit 1 | 30000");
-            return new Response("OK", { status: 200 });
-          }
 
           try {
             const { sha, products } = await getProductsFromGithub();
@@ -202,9 +223,9 @@ export default {
         return new Response("OK", { status: 200 });
       }
 
-      // ==========================================
-      // ثانياً: استقبال طلبات الشراء القادمة من المتجر
-      // ==========================================
+      // ====================================================
+      // 2. استقبال طلبات الشراء القادمة من المتجر
+      // ====================================================
       const phone = String(data.phone || "").trim();
       const address = String(data.address || "").trim();
       const products = String(data.products || "").trim();
