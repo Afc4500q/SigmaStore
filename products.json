@@ -3,103 +3,156 @@
     "id": 1,
     "name": "كيبل تايب سي",
     "price": 1000,
-    "img": "img/prod_1787994301464.jpg"
+    "img": "img/prod_1787994301464.jpg",
+    "category": "الكيبلات",
+    "brand": "- مارشال",
+    "model": "- M001-C"
   },
   {
     "id": 2,
     "name": "كيبل تايب سي - ايفون 30 واط",
     "price": 5000,
-    "img": "img/prod_1787994561881.jpg"
+    "img": "img/prod_1787994561881.jpg",
+    "category": "الكيبلات",
+    "brand": "- مارشال",
+    "model": "- MA-06"
   },
   {
     "id": 3,
     "name": "كيبل ايفون",
     "price": 1000,
-    "img": "img/prod_1787994745373.jpg"
+    "img": "img/prod_1787994745373.jpg",
+    "category": "الكيبلات",
+    "brand": "- مارشال",
+    "model": "- M001-i"
   },
   {
     "id": 4,
     "name": "هب 6 في 1 HDMI 4K 60HZ",
     "price": 20000,
-    "img": "img/prod_1787994747288.jpg"
+    "img": "img/prod_1787994747288.jpg",
+    "category": "الموزعات",
+    "brand": "- هوكو",
+    "model": "- HB51"
   },
   {
     "id": 5,
     "name": "كيبل تايب سي 3A",
     "price": 3000,
-    "img": "img/prod_1787995454505.jpg"
+    "img": "img/prod_1787995454505.jpg",
+    "category": "الكيبلات",
+    "brand": "- هوكو",
+    "model": "- X117"
   },
   {
     "id": 6,
     "name": "كيبل تايب سي قصير 27 واط",
     "price": 1500,
-    "img": "img/prod_1787995456916.jpg"
+    "img": "img/prod_1787995456916.jpg",
+    "category": "الكيبلات",
+    "brand": "- هوكو",
+    "model": "- x96"
   },
   {
     "id": 7,
     "name": "فلاش 8GB عالي السرعة",
     "price": 7000,
-    "img": "img/prod_1787995458929.jpg"
+    "img": "img/prod_1787995458929.jpg",
+    "category": "عام",
+    "brand": "- هوكو",
+    "model": "- flash8"
   },
   {
     "id": 8,
     "name": "شاحنة سيارة 30 واط",
     "price": 4500,
-    "img": "img/prod_1787995461119.jpg"
+    "img": "img/prod_1787995461119.jpg",
+    "category": "الشواحن",
+    "brand": "- هوكو",
+    "model": "- Z58"
   },
   {
     "id": 9,
     "name": "راس شاحنة تايب سي - usb",
     "price": 6000,
-    "img": "img/prod_1787995463280.jpg"
+    "img": "img/prod_1787995463280.jpg",
+    "category": "الشواحن",
+    "brand": "- هوكو",
+    "model": "- CS32B"
   },
   {
     "id": 10,
     "name": "شاحنة تايب سي 67 واط",
     "price": 12000,
-    "img": "img/prod_1787995465364.jpg"
+    "img": "img/prod_1787995465364.jpg",
+    "category": "الشواحن",
+    "brand": "- هوكو",
+    "model": "- CS27B"
   },
   {
     "id": 11,
     "name": "شاحنه تايب سي 18 واط",
     "price": 5000,
-    "img": "img/prod_1787995467550.jpg"
+    "img": "img/prod_1787995467550.jpg",
+    "category": "الشواحن",
+    "brand": "- هوكو",
+    "model": "- CS21A"
   },
   {
     "id": 12,
     "name": "هتفون Aux هوكو",
     "price": 3000,
-    "img": "img/prod_1787996152818.jpg"
+    "img": "img/prod_1787996152818.jpg",
+    "category": "الهتفونات",
+    "brand": "- هوكو",
+    "model": "- M123"
   },
   {
     "id": 13,
     "name": "هتفون Aux هوكو",
     "price": 2500,
-    "img": "img/prod_1787996155105.jpg"
+    "img": "img/prod_1787996155105.jpg",
+    "category": "الهتفونات",
+    "brand": "- هوكو",
+    "model": "- M104"
   },
   {
     "id": 14,
-    "name": "هتفون Aux هوكو DM6",
+    "name": "هتفون Aux هوكو",
     "price": 3000,
-    "img": "img/prod_1787996157185.jpg"
+    "img": "img/prod_1787996157185.jpg",
+    "category": "الهتفونات",
+    "brand": "- هوكو",
+    "model": "- DM6"
   },
   {
     "id": 15,
     "name": "ايربود من هوكو",
     "price": 10000,
-    "img": "img/prod_1787996159188.jpg"
+    "img": "img/prod_1787996159188.jpg",
+    "category": "الايربودات",
+    "brand": "- هوكو",
+    "model": "- EQ33"
+    
   },
   {
     "id": 16,
     "name": "ايربود للمكالمات والاعمال بطارية 15 ساعه",
     "price": 8000,
-    "img": "img/prod_1787996161403.jpg"
+    "img": "img/prod_1787996161403.jpg",
+    "category": "الايربودات",
+    "brand": "- هوكو",
+    "model": "- E37"
   },
   {
     "id": 17,
     "name": "سماعة هوكو لاسلكية بطارية 90 ساعه",
     "price": 15000,
-    "img": "img/prod_1787996163333.jpg"
+    "img": "img/prod_1787996163333.jpg",
+    "category": "سماعات الراس",
+    "brand": "- هوكو",
+    "model": "- W35 MAX"
+  
   },
   {
     "id": 18,
