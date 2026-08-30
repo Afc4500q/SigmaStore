@@ -20,7 +20,6 @@ export default {
     try {
       const data = await request.json();
 
-      // دالة مساعدة لقراءة الأسطر التلقائية
       const parseKeyValues = (rawText) => {
         const result = {};
         const lines = rawText.split("\n");
@@ -45,18 +44,22 @@ export default {
       if (data.message || data.callback_query) {
         const isCallback = Boolean(data.callback_query);
         
+        // استخراج معرف المحادثة
         let chatId = null;
         if (data.message && data.message.chat) {
           chatId = String(data.message.chat.id);
-        } else if (data.callback_query) {
-          chatId = String(data.callback_query.message ? data.callback_query.message.chat.id : data.callback_query.from.id);
+        } else if (data.callback_query && data.callback_query.message && data.callback_query.message.chat) {
+          chatId = String(data.callback_query.message.chat.id);
+        } else if (data.callback_query && data.callback_query.from) {
+          chatId = String(data.callback_query.from.id);
         }
 
         const callbackData = isCallback ? data.callback_query.data : null;
         const text = (isCallback ? "" : (data.message?.text || data.message?.caption || "")).trim();
-        const allowedAdmins = [String(env.CHAT_ID_1), String(env.CHAT_ID_2)].filter(Boolean);
+        const allowedAdmins = [String(env.CHAT_ID_1 || "").trim(), String(env.CHAT_ID_2 || "").trim()].filter(Boolean);
 
-        if (!chatId || !allowedAdmins.includes(chatId)) {
+        // إذا كان الآدمن غير مصرح له، نرجع استجابة مقبولة لتيليجرام مع عدم التنفيذ
+        if (!chatId || (allowedAdmins.length > 0 && !allowedAdmins.includes(chatId))) {
           return new Response("OK", { status: 200 });
         }
 
@@ -76,7 +79,7 @@ export default {
         };
 
         const sendReply = async (replyText, customKeyboard = mainKeyboard) => {
-          await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+          return await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -88,7 +91,7 @@ export default {
         };
 
         const answerCallback = async (callbackQueryId, alertText) => {
-          await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/answerCallbackQuery`, {
+          return await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/answerCallbackQuery`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -117,7 +120,6 @@ export default {
           if (!res.ok) throw new Error("فشل حفظ التعديلات في GitHub");
         };
 
-        // عرض المنتجات كقائمة أزرار
         const sendProductsMenu = async (products) => {
           const inlineKeyboardButtons = [];
           for (let i = 0; i < products.length; i += 2) {
@@ -146,7 +148,6 @@ export default {
           });
         };
 
-        // عرض تفاصيل المنتج مع أزرار التحكم
         const sendProductWithButtons = async (p) => {
           const inlineKeyboard = {
             inline_keyboard: [
@@ -173,7 +174,7 @@ export default {
           });
         };
 
-        // معالجة ضغطات الأزرار
+        // تفاعل الأزرار
         if (isCallback) {
           if (callbackData === "list_all") {
             try {
@@ -299,7 +300,7 @@ export default {
           return new Response("OK", { status: 200 });
         }
 
-        // إضافة منتج جديد
+        // إضافة منتج جديد من صورة مع وصف
         if (data.message?.photo && data.message.photo.length > 0 && text) {
           const parsed = parseKeyValues(text);
 
