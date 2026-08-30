@@ -214,5 +214,14 @@
     "name": "شاحنة تايب سي هوكو",
     "price": 5000,
     "img": "img/prod_1788089044595_0nnxmd.jpg"
+  },
+  {
+    "id": 26,
+    "category": "عام",
+    "brand": "هوكو",
+    "model": "HB1A",
+    "name": "موزع 4 في 1",
+    "price": 6000,
+    "img": "img/prod_1788098595712_shcszc.jpg"
   }
 ]
