@@ -268,5 +268,14 @@
     "name": "كيبل تايب سي 100 واط",
     "price": 6000,
     "img": "img/prod_1788099192987_zvxmw2.jpg"
+  },
+  {
+    "id": 32,
+    "category": "عام",
+    "brand": "تجاري",
+    "model": "تجاري",
+    "name": "ماوس وكيبورد Mini",
+    "price": 10000,
+    "img": "img/prod_1788104083762_w7jq3u.jpg"
   }
 ]
