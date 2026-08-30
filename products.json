@@ -250,5 +250,14 @@
     "name": "كيبل ايفون 2.4A",
     "price": 3500,
     "img": "img/prod_1788098752924_kc6xbn.jpg"
+  },
+  {
+    "id": 30,
+    "category": "الكيبلات",
+    "brand": "هوكو",
+    "model": "X76",
+    "name": "كيبل متعدد 4 في 1",
+    "price": 3000,
+    "img": "img/prod_1788098795873_kp1po3.jpg"
   }
 ]
