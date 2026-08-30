@@ -160,5 +160,14 @@
     "category": "الهتفونات",
     "brand": "- هوكو",
     "model": "- M114 TC"
+  },
+  {
+    "id": 20,
+    "category": "الكترونيات",
+    "brand": "Generic",
+    "model": "L298N",
+    "name": "كرت L298N",
+    "price": 4500,
+    "img": "img/prod_1788087240663_bze7cz.jpg"
   }
 ]
