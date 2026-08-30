@@ -241,5 +241,14 @@
     "name": "كيبل جلكسي",
     "price": 1500,
     "img": "img/prod_1788098698477_r7lozm.jpg"
+  },
+  {
+    "id": 29,
+    "category": "الكيبلات",
+    "brand": "هوكو",
+    "model": "X112 IP",
+    "name": "كيبل ايفون 2.4A",
+    "price": 3500,
+    "img": "img/prod_1788098752924_kc6xbn.jpg"
   }
 ]
