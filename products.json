@@ -196,5 +196,14 @@
     "name": "Arduino Nano",
     "price": 8000,
     "img": "img/prod_1788087247349_mkkuiv.jpg"
+  },
+  {
+    "id": 24,
+    "category": "الكترونيات",
+    "brand": "Generic",
+    "model": "TT DC",
+    "name": "TT DC Motor with Wheel",
+    "price": 3500,
+    "img": "img/prod_1788087249465_c66fya.jpg"
   }
 ]
