@@ -187,5 +187,14 @@
     "name": "Micro Servo Motor",
     "price": 3000,
     "img": "img/prod_1788087245171_a03x4v.jpg"
+  },
+  {
+    "id": 23,
+    "category": "الكترونيات",
+    "brand": "Generic",
+    "model": "X13271",
+    "name": "Arduino Nano",
+    "price": 8000,
+    "img": "img/prod_1788087247349_mkkuiv.jpg"
   }
 ]
