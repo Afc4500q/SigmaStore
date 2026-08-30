@@ -205,5 +205,14 @@
     "name": "TT DC Motor with Wheel",
     "price": 3500,
     "img": "img/prod_1788087249465_c66fya.jpg"
+  },
+  {
+    "id": 25,
+    "category": "الشواحن",
+    "brand": "هوكو",
+    "model": "UK",
+    "name": "شاحنة تايب سي هوكو",
+    "price": 5000,
+    "img": "img/prod_1788089044595_0nnxmd.jpg"
   }
 ]
