@@ -178,5 +178,14 @@
     "name": "متحكم ESP32",
     "price": 12000,
     "img": "img/prod_1788087242905_hw5rwo.jpg"
+  },
+  {
+    "id": 22,
+    "category": "الكترونيات",
+    "brand": "Generic",
+    "model": "SG90",
+    "name": "Micro Servo Motor",
+    "price": 3000,
+    "img": "img/prod_1788087245171_a03x4v.jpg"
   }
 ]
