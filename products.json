@@ -223,5 +223,14 @@
     "name": "موزع 4 في 1",
     "price": 6000,
     "img": "img/prod_1788098595712_shcszc.jpg"
+  },
+  {
+    "id": 27,
+    "category": "عام",
+    "brand": "هوكو",
+    "model": "UA17 TC",
+    "name": "تحويلة من Type-C الى USB",
+    "price": 3000,
+    "img": "img/prod_1788098632555_8ld86o.jpg"
   }
 ]
