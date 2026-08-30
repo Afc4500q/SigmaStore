@@ -44,13 +44,20 @@ export default {
       // ====================================================
       if (data.message || data.callback_query) {
         const isCallback = Boolean(data.callback_query);
-        const chatId = String(isCallback ? data.callback_query.message.chat.id : data.message.chat.id);
+        
+        let chatId = null;
+        if (data.message && data.message.chat) {
+          chatId = String(data.message.chat.id);
+        } else if (data.callback_query) {
+          chatId = String(data.callback_query.message ? data.callback_query.message.chat.id : data.callback_query.from.id);
+        }
+
         const callbackData = isCallback ? data.callback_query.data : null;
-        const text = (isCallback ? "" : (data.message.text || data.message.caption || "")).trim();
+        const text = (isCallback ? "" : (data.message?.text || data.message?.caption || "")).trim();
         const allowedAdmins = [String(env.CHAT_ID_1), String(env.CHAT_ID_2)].filter(Boolean);
 
-        if (!allowedAdmins.includes(chatId)) {
-          return new Response("Unauthorized", { status: 200 });
+        if (!chatId || !allowedAdmins.includes(chatId)) {
+          return new Response("OK", { status: 200 });
         }
 
         const GITHUB_BASE = `https://api.github.com/repos/${env.GITHUB_REPO}/contents/`;
@@ -110,10 +117,9 @@ export default {
           if (!res.ok) throw new Error("فشل حفظ التعديلات في GitHub");
         };
 
-        // دالة عرض قائمة المنتجات كأزرار
+        // عرض المنتجات كقائمة أزرار
         const sendProductsMenu = async (products) => {
           const inlineKeyboardButtons = [];
-          
           for (let i = 0; i < products.length; i += 2) {
             const row = [];
             row.push({
@@ -140,7 +146,7 @@ export default {
           });
         };
 
-        // دالة عرض تفاصيل منتج محدد مع أزرار التحكم
+        // عرض تفاصيل المنتج مع أزرار التحكم
         const sendProductWithButtons = async (p) => {
           const inlineKeyboard = {
             inline_keyboard: [
@@ -154,7 +160,7 @@ export default {
             ]
           };
 
-          const pText = `🏷️ الاسم: ${p.name}\n🏢 الماركة: ${p.brand || '-'}\n📱 الموديل: ${p.model || '-'}\n📁 القسم: ${p.category || 'عام'}\n💰 السعر: ${p.price.toLocaleString()} د.ع\n🆔 المعرف: ${p.id}`;
+          const pText = `🏷️ الاسم: ${p.name}\n🏢 الماركة: ${p.brand || '-'}\n📱 الموديل: ${p.model || '-'}\n📁 القسم: ${p.category || 'عام'}\n💰 السعر: ${Number(p.price || 0).toLocaleString()} د.ع\n🆔 المعرف: ${p.id}`;
           
           await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
             method: "POST",
@@ -167,9 +173,7 @@ export default {
           });
         };
 
-        // ----------------------------------------------------
-        // تفاعل الأزرار (Callback Query)
-        // ----------------------------------------------------
+        // معالجة ضغطات الأزرار
         if (isCallback) {
           if (callbackData === "list_all") {
             try {
@@ -181,7 +185,7 @@ export default {
             }
           }
 
-          if (callbackData.startsWith("view_")) {
+          if (callbackData && callbackData.startsWith("view_")) {
             const targetId = parseInt(callbackData.replace("view_", ""), 10);
             try {
               const { products } = await getProductsFromGithub();
@@ -197,7 +201,7 @@ export default {
             }
           }
 
-          if (callbackData.startsWith("del_")) {
+          if (callbackData && callbackData.startsWith("del_")) {
             const targetId = parseInt(callbackData.replace("del_", ""), 10);
             try {
               const { sha, products } = await getProductsFromGithub();
@@ -216,15 +220,16 @@ export default {
             }
           }
 
-          if (callbackData.startsWith("edit_")) {
+          if (callbackData && callbackData.startsWith("edit_")) {
             const targetId = parseInt(callbackData.replace("edit_", ""), 10);
             await answerCallback(data.callback_query.id, "تم تجهيز البيانات");
             
-            const { products } = await getProductsFromGithub();
-            const currentItem = products.find(p => p.id === targetId);
+            try {
+              const { products } = await getProductsFromGithub();
+              const currentItem = products.find(p => p.id === targetId);
 
-            if (currentItem) {
-              const template = 
+              if (currentItem) {
+                const template = 
 `/edit ${targetId}
 الاسم: ${currentItem.name || ''}
 الماركة: ${currentItem.brand || '-'}
@@ -232,16 +237,17 @@ export default {
 القسم: ${currentItem.category || 'عام'}
 السعر: ${currentItem.price}`;
 
-              await sendReply(`✏️ انسخ الرسالة التالية، عدّل ما تريده، ثم أرسلها مباشرة:\n\n\`\`\`\n${template}\n\`\`\``);
+                await sendReply(`✏️ انسخ الرسالة التالية، عدّل ما تريده، ثم أرسلها مباشرة:\n\n\`\`\`\n${template}\n\`\`\``);
+              }
+            } catch (err) {
+              await sendReply("❌ خطأ: " + err.message);
             }
           }
 
           return new Response("OK", { status: 200 });
         }
 
-        // ----------------------------------------------------
         // الأوامر النصية
-        // ----------------------------------------------------
         if (text === "/start" || text === "❓ تعليمات الاستخدام") {
           const welcomeMsg = 
 `👋 مرحباً بك في لوحة تحكم SIGMA STORE
@@ -293,8 +299,8 @@ export default {
           return new Response("OK", { status: 200 });
         }
 
-        // إضافة منتج جديد من صورة مع وصف
-        if (data.message.photo && data.message.photo.length > 0 && text) {
+        // إضافة منتج جديد
+        if (data.message?.photo && data.message.photo.length > 0 && text) {
           const parsed = parseKeyValues(text);
 
           if (!parsed.name || isNaN(parsed.price)) {
@@ -361,7 +367,7 @@ export default {
           return new Response("OK", { status: 200 });
         }
 
-        // تعديل البيانات بالتنسيق الجديد
+        // تعديل البيانات
         if (text.startsWith("/edit")) {
           const firstLine = text.split("\n")[0];
           const targetId = parseInt(firstLine.replace("/edit", "").trim(), 10);
@@ -442,11 +448,11 @@ ${date}
 SIGMA STORE`;
 
       const chatIds = [env.CHAT_ID_1, env.CHAT_ID_2].filter(Boolean);
-      for (const chatId of chatIds) {
+      for (const cId of chatIds) {
         await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: chatId, text: message })
+          body: JSON.stringify({ chat_id: cId, text: message })
         });
       }
 
@@ -458,7 +464,7 @@ SIGMA STORE`;
     } catch (error) {
       console.error("Worker Error:", error);
       return new Response(JSON.stringify({ ok: false, error: error.message || "حدث خطأ في الخادم" }), {
-        status: 500,
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
