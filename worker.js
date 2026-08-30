@@ -20,7 +20,7 @@ export default {
     try {
       const data = await request.json();
 
-      // دالة مساعدة لقراءة الأسطر التلقائية (الاسم: ، السعر: ، إلخ)
+      // دالة مساعدة لقراءة الأسطر التلقائية
       const parseKeyValues = (rawText) => {
         const result = {};
         const lines = rawText.split("\n");
@@ -29,10 +29,10 @@ export default {
           if (colonIndex !== -1) {
             const key = line.substring(0, colonIndex).trim();
             const val = line.substring(colonIndex + 1).trim();
-            if (key.includes("قسم")) result.category = val;
+            if (key.includes("اسم")) result.name = val;
             if (key.includes("مارك") || key.includes("براند")) result.brand = val;
             if (key.includes("موديل")) result.model = val;
-            if (key.includes("اسم")) result.name = val;
+            if (key.includes("قسم")) result.category = val;
             if (key.includes("سعر")) result.price = parseInt(val.replace(/[^0-9]/g, ""), 10);
           }
         }
@@ -80,28 +80,6 @@ export default {
           });
         };
 
-        const sendProductWithButtons = async (p) => {
-          const inlineKeyboard = {
-            inline_keyboard: [
-              [
-                { text: "✏️ تعديل كامل البيانات", callback_data: `edit_${p.id}` },
-                { text: "🗑️ حذف المنتج", callback_data: `del_${p.id}` }
-              ]
-            ]
-          };
-
-          const pText = `🏷️ الاسم: ${p.name}\n📁 القسم: ${p.category || 'عام'}\n🏢 الماركة: ${p.brand || '-'}\n📱 الموديل: ${p.model || '-'}\n💰 السعر: ${p.price.toLocaleString()} د.ع\n🆔 المعرف: ${p.id}`;
-          await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              chat_id: chatId,
-              text: pText,
-              reply_markup: inlineKeyboard
-            })
-          });
-        };
-
         const answerCallback = async (callbackQueryId, alertText) => {
           await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/answerCallbackQuery`, {
             method: "POST",
@@ -132,8 +110,93 @@ export default {
           if (!res.ok) throw new Error("فشل حفظ التعديلات في GitHub");
         };
 
-        // تفاعل الأزرار
+        // دالة عرض قائمة المنتجات كأزرار
+        const sendProductsMenu = async (products) => {
+          const inlineKeyboardButtons = [];
+          
+          for (let i = 0; i < products.length; i += 2) {
+            const row = [];
+            row.push({
+              text: `🔹 ${products[i].name}`,
+              callback_data: `view_${products[i].id}`
+            });
+            if (products[i + 1]) {
+              row.push({
+                text: `🔹 ${products[i + 1].name}`,
+                callback_data: `view_${products[i + 1].id}`
+              });
+            }
+            inlineKeyboardButtons.push(row);
+          }
+
+          await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: chatId,
+              text: `📋 اختر المنتج لعرض تفاصيله أو تعديله (${products.length} منتج):`,
+              reply_markup: { inline_keyboard: inlineKeyboardButtons }
+            })
+          });
+        };
+
+        // دالة عرض تفاصيل منتج محدد مع أزرار التحكم
+        const sendProductWithButtons = async (p) => {
+          const inlineKeyboard = {
+            inline_keyboard: [
+              [
+                { text: "✏️ تعديل كامل البيانات", callback_data: `edit_${p.id}` },
+                { text: "🗑️ حذف المنتج", callback_data: `del_${p.id}` }
+              ],
+              [
+                { text: "🔙 رجوع للقائمة", callback_data: "list_all" }
+              ]
+            ]
+          };
+
+          const pText = `🏷️ الاسم: ${p.name}\n🏢 الماركة: ${p.brand || '-'}\n📱 الموديل: ${p.model || '-'}\n📁 القسم: ${p.category || 'عام'}\n💰 السعر: ${p.price.toLocaleString()} د.ع\n🆔 المعرف: ${p.id}`;
+          
+          await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: chatId,
+              text: pText,
+              reply_markup: inlineKeyboard
+            })
+          });
+        };
+
+        // ----------------------------------------------------
+        // تفاعل الأزرار (Callback Query)
+        // ----------------------------------------------------
         if (isCallback) {
+          if (callbackData === "list_all") {
+            try {
+              const { products } = await getProductsFromGithub();
+              await answerCallback(data.callback_query.id, "قائمة المنتجات");
+              await sendProductsMenu(products);
+            } catch (err) {
+              await sendReply("❌ خطأ: " + err.message);
+            }
+          }
+
+          if (callbackData.startsWith("view_")) {
+            const targetId = parseInt(callbackData.replace("view_", ""), 10);
+            try {
+              const { products } = await getProductsFromGithub();
+              const item = products.find(p => p.id === targetId);
+              if (item) {
+                await answerCallback(data.callback_query.id, "تم فتح المنتج");
+                await sendProductWithButtons(item);
+              } else {
+                await answerCallback(data.callback_query.id, "المنتج غير موجود");
+              }
+            } catch (err) {
+              await sendReply("❌ خطأ: " + err.message);
+            }
+          }
+
           if (callbackData.startsWith("del_")) {
             const targetId = parseInt(callbackData.replace("del_", ""), 10);
             try {
@@ -163,10 +226,10 @@ export default {
             if (currentItem) {
               const template = 
 `/edit ${targetId}
-القسم: ${currentItem.category || 'عام'}
+الاسم: ${currentItem.name || ''}
 الماركة: ${currentItem.brand || '-'}
 الموديل: ${currentItem.model || '-'}
-الاسم: ${currentItem.name || ''}
+القسم: ${currentItem.category || 'عام'}
 السعر: ${currentItem.price}`;
 
               await sendReply(`✏️ انسخ الرسالة التالية، عدّل ما تريده، ثم أرسلها مباشرة:\n\n\`\`\`\n${template}\n\`\`\``);
@@ -176,21 +239,23 @@ export default {
           return new Response("OK", { status: 200 });
         }
 
-        // القوائم والمساعدة
+        // ----------------------------------------------------
+        // الأوامر النصية
+        // ----------------------------------------------------
         if (text === "/start" || text === "❓ تعليمات الاستخدام") {
           const welcomeMsg = 
 `👋 مرحباً بك في لوحة تحكم SIGMA STORE
 
 📸 لإضافة منتج:
-أرسل الصورة واكتب في الوصف:
-القسم: الشواحن
+أرسل الصورة واكتب في الوصف (Caption):
+الاسم: شاحن سامسونج أصلي
 الماركة: Samsung
 الموديل: 45W
-الاسم: شاحن سامسونج أصلي
+القسم: الشواحن
 السعر: 25000
 
 ✏️ لتعديل منتج:
-اضغط على "عرض المنتجات" ثم اختر "تعديل كامل البيانات" تحت المنتج المطلوب.`;
+اضغط على "عرض المنتجات"، اختر المنتج من القائمة، ثم اضغط على "تعديل كامل البيانات".`;
           await sendReply(welcomeMsg);
           return new Response("OK", { status: 200 });
         }
@@ -200,12 +265,12 @@ export default {
 `📸 طريقة إضافة منتج جديد:
 
 1️⃣ اختر الصورة من الاستوديو.
-2️⃣ اكتب في خانة الوصف (Caption):
+2️⃣ اكتب في خانة الوصف (Caption) بالترتيب:
 
-القسم: الكيبلات
+الاسم: كيبل شحن سريع
 الماركة: Anker
 الموديل: Type-C
-الاسم: كيبل شحن سريع
+القسم: الكيبلات
 السعر: 10000
 
 📌 الأقسام المتوفرة بالموقع:
@@ -220,10 +285,7 @@ export default {
             if (products.length === 0) {
               await sendReply("📦 لا توجد منتجات مسجلة في المتجر حالياً.");
             } else {
-              await sendReply(`📋 قائمة المنتجات (${products.length} منتج):`);
-              for (const p of products) {
-                await sendProductWithButtons(p);
-              }
+              await sendProductsMenu(products);
             }
           } catch (err) {
             await sendReply("❌ خطأ أثناء جلب المنتجات: " + err.message);
@@ -280,10 +342,10 @@ export default {
             const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
             const newProd = {
               id: newId,
-              category: parsed.category || "عام",
+              name: parsed.name,
               brand: parsed.brand || "-",
               model: parsed.model || "-",
-              name: parsed.name,
+              category: parsed.category || "عام",
               price: parsed.price,
               img: imgPath
             };
@@ -318,10 +380,10 @@ export default {
             if (!item) {
               await sendReply(`⚠️ لم يتم العثور على منتج برقم ${targetId}`);
             } else {
-              if (parsed.category) item.category = parsed.category;
+              if (parsed.name) item.name = parsed.name;
               if (parsed.brand) item.brand = parsed.brand;
               if (parsed.model) item.model = parsed.model;
-              if (parsed.name) item.name = parsed.name;
+              if (parsed.category) item.category = parsed.category;
               if (!isNaN(parsed.price)) item.price = parsed.price;
 
               await saveProductsToGithub(products, sha, `Update product ID: ${targetId}`);
