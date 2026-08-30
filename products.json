@@ -277,5 +277,14 @@
     "name": "ماوس وكيبورد Mini",
     "price": 10000,
     "img": "img/prod_1788104083762_w7jq3u.jpg"
+  },
+  {
+    "id": 33,
+    "category": "عام",
+    "brand": "Logitech ( مقلد )",
+    "model": "تجاري",
+    "name": "ماوس كوبي لوجتك بلوتوث",
+    "price": 5000,
+    "img": "img/prod_1788104460162_9zgdan.jpg"
   }
 ]
